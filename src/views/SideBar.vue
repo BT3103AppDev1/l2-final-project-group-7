@@ -13,7 +13,6 @@
       <!-- users points -->
       <CIcon :icon="cilGem" size="custom"></CIcon>
       <span class="sidebar-pointstext"><span>{{ userDetails[0].points }}</span></span>
->>>>>>> main
     </div>
     <div class="sidebar-body" >
       <!-- home -->
