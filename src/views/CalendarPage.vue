@@ -18,7 +18,6 @@
         </div>
 
         <div class="users-in-project">
-            <UsersInProject />
         </div>
     </div>
 
@@ -28,7 +27,6 @@
 <script setup lang="ts">  
 
     import Sidebar from "./SideBar.vue"
-    import UsersInProject from "@/components/UsersInProject/UsersInProject.vue"
     import Calendar from "../components/Calendar.vue"
     import Header from "../components/Header.vue"
 
