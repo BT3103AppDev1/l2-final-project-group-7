@@ -96,17 +96,6 @@ import { getAuth } from 'firebase/auth';
         calendarButton.classList.add('clicked');
       }
     },
-    data() {
-      return {
-        isModalVisible: false
-      }
-    },
-    components: {Modal, cilUserPlus},
-    setup() {
-      return {
-        cilUserPlus,
-      }
-    },
     methods: {
       goToCalendar() {
         this.$router.push("/calendar/" + this.$route.params.projID + '/' + this.$route.params.projName)
