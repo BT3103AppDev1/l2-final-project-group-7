@@ -68,6 +68,18 @@
                       {{ formattedStakeHolders }}
                     </div>
                 </div> 
+                <div class="addproject-addprojtitle">
+                  <div class="addproject-projtitletext">Color:</div>
+                  <div class="color-picker">
+                    <div
+                      v-for="color in colorOptions"
+                      :key="color"
+                      :style="{ backgroundColor: color }"
+                      :class="{ 'color-swatch': true, 'selected': isSelectedColor(color) }"
+                      @click="cardColor = color"
+                    ></div>
+                  </div>
+                </div>
               </form>
               </template>
               <template v-slot:footer>
@@ -115,7 +127,22 @@
       stakeHolderEmail: "",
       stakeHolderArrayEmail: [],
       stakeHolderArrayID: [],
-      columns: useLists(this.$route.params.projID)
+      columns: useLists(this.$route.params.projID),
+      cardColor: "#ffffff",
+      colorOptions: [
+        "#D3D3D3", // light gray
+        "#C0C0C0", // silver
+        "#B0C4DE", // light steel blue
+        "#D8BFD8", // thistle
+        "#F08080", // light coral
+        "#FFA07A", // light salmon
+        "#CD5C5C", // indian red
+        "#8FBC8F", // dark sea green
+        "#00CED1", // dark turquoise
+        "#FFDAB9", // peach puff
+        "#FFD700", // gold
+      ]
+
     };
   },
     setup() {
@@ -127,7 +154,12 @@
     computed: {
       formattedStakeHolders() {
         return this.stakeHolderArrayEmail.join(", ")
-      }
+      },
+      isSelectedColor() {
+        return (color) => {
+        return this.cardColor === color;
+      };
+  },
     },
     methods: {
       async addCard() {
@@ -143,7 +175,8 @@
           about: this.about,
           stakeHolderArrayID: this.stakeHolderArrayID,
           stakeHolderArrayEmail: this.stakeHolderArrayEmail,
-          projID: this.$route.params.projID
+          projID: this.$route.params.projID,
+          cardColor: this.cardColor,
         };
         const docRef = await addDoc(taskCollectionRef, taskDoc); 
         await setDoc(doc(db, "tasks", docRef.id), taskDoc)
@@ -349,6 +382,24 @@ textarea.addproject-inputbg {
   font-size: 1rem;
   line-height: 1.5rem;
 }
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  cursor: pointer;
+}
 
+.color-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
 
+.selected {
+  width: 17px;
+  height: 17px;
+  border: 2px solid #000;
+}
 </style>

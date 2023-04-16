@@ -14,18 +14,15 @@
     </div>
 
     <div class="UsersInProject">
-      <Disqus shortname="workwise-1" />
     </div>
   </div>
 </template>
 
 <script>
 import KanbanBoard from "@/components/Kanban/KanbanBoard.vue";
-import UsersInProject from "@/components/UsersInProject/UsersInProject.vue"
 import Header from "@/components/Header.vue"
 import SideBar from "@/views/SideBar.vue";
 import Modal from "@/components/Modal.vue";
-import { Disqus } from 'vue-disqus'
 
 import { getAuth, onAuthStateChanged } from "@firebase/auth";
 
@@ -55,7 +52,7 @@ export default {
     },
   methods: {
   },
-  components: {SideBar, Modal, KanbanBoard, UsersInProject, Header, Disqus}
+  components: {SideBar, Modal, KanbanBoard, Header}
 };
 </script>
 

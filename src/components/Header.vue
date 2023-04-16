@@ -4,8 +4,8 @@
         {{ this.$route.params.projName }}
       </div>
       <div class="buttons">
-        <button @click="goToTasks" :class="{ 'nav-button': true, 'clicked': $route.path === '/tasks'}" >Tasks</button>
-        <button @click="goToCalendar" :class="{ 'nav-button': true, 'clicked': $route.path == '/calendar' }">Calendar</button>
+        <button ref="tasksButton" @click="goToTasks" :class="{ 'nav-button': true, 'clicked': $route.path.match(/tasks/i) }" >Tasks</button>
+        <button ref="calendarButton" @click="goToCalendar" :class="{ 'nav-button': true, 'clicked': $route.path.match(/calendar/i) }">Calendar</button>
       </div>
     </div>
   </template>
@@ -14,21 +14,34 @@
   export default {
     name: "Header",
     mounted() {
-      console.log(this.$props.projName)
-      const button = document.querySelector('.nav-button');
-      console.log(button);
-  
-      button.addEventListener('click', () => {
-        button.classList.add('clicked');
-        console.log("clicked!")
+      const tasksButton = this.$refs.tasksButton;
+      const calendarButton = this.$refs.calendarButton;
+
+      tasksButton.addEventListener('click', () => {
+        tasksButton.classList.add('clicked');
+        calendarButton.classList.remove('clicked');
+        console.log("clicked Tasks button");
       });
+
+      calendarButton.addEventListener('click', () => {
+        calendarButton.classList.add('clicked');
+        tasksButton.classList.remove('clicked');
+        console.log("clicked Calendar button");
+      });
+      
+      // Check the current route and set the appropriate button as clicked
+      if (this.$route.path.match(/tasks/i)) {
+        tasksButton.classList.add('clicked');
+      } else if (this.$route.path.match(/calendar/i)) {
+        calendarButton.classList.add('clicked');
+      }
     },
     methods: {
       goToCalendar() {
-        this.$router.push("/calendar")
+        this.$router.push("/calendar/" + this.$route.params.projID + '/' + this.$route.params.projName)
       },
       goToTasks() {
-        this.$router.push("/tasks")
+        this.$router.push("/tasks/" + this.$route.params.projID + '/' + this.$route.params.projName)
       }
     }
   };

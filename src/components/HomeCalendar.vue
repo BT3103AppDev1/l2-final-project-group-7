@@ -2,10 +2,9 @@
     <div id="calendar-display" class="flex-column">
 
         <div id="calendar-body" class="flex-row">
-
             <div id="calendar-proper">
                 <calendar-view
-                    :items="itemsWithColor"
+                    :items="state.items"
                     :enable-drag-drop="true"
                     @drop-on-date="onDrop"
                     :show-date="state.showDate"
@@ -13,13 +12,11 @@
                     :show-weekday="true"
                     :show-week-numbers="true"
                     :disablePast = "true"
-                    :item-classes="itemClasses"
                     class = "holiday-us-traditional holiday-us-official"
                     id = "calendar-body">
                     <template #header="{ headerProps }">
-                        <CalendarViewHeader :header-props="headerProps" @input="setShowDate" />
+                            <CalendarViewHeader :header-props="headerProps" @input="setShowDate" />
                     </template>
-
                 </calendar-view> 
             </div>
 
@@ -62,10 +59,9 @@
     } from "vue-simple-calendar"
 
     import {
+        ICalendarItem,
         INormalizedCalendarItem,
     } from  "vue-simple-calendar/dist/src/ICalendarItem"    
-
-    import { ICalendarItem } from "../components/CalendarAPI/ICalendarItem"
 
     import {
         onMounted,
@@ -80,8 +76,6 @@
     //import "../../../node_modules/vue-simple-calendar/dist/src/CalendarViewHeader.vue"
     import Sidebar from "../views/SideBar.vue"
     import { getDocs } from 'firebase/firestore';
-    import { doc, updateDoc } from 'firebase/firestore';
-    import { computed } from 'vue';
 
 
     // Gets this month
@@ -169,170 +163,66 @@
     }
 */
     // For moving items around on calendar (check if its needed)
-    const onDrop = async (item: INormalizedCalendarItem, date: Date): Promise<void> => {
-        console.log("Dropped item:", item);
+    const onDrop = (item: INormalizedCalendarItem, date: Date): void => {
         state.message = `You dropped ${item.id} on ${date.toLocaleDateString()}`
+        // Determine the delta between the old start date and the date chosen,
+        // and apply that delta to both the start and end date to move the item.
         const eLength = CalendarMath.dayDiff(item.startDate, date)
         item.originalItem.startDate = CalendarMath.addDays(item.startDate, eLength)
         item.originalItem.endDate = CalendarMath.addDays(item.endDate, eLength)
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBPB1jmwH-3h1YmBAkkekTF8eDto4pfo9c",
-            authDomain: "workwise-b1604.firebaseapp.com",
-            projectId: "workwise-b1604",
-            storageBucket: "workwise-b1604.appspot.com",
-            messagingSenderId: "218806215802",
-            appId: "1:218806215802:web:258458dab46639a66e07c3"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Update task in 'tasks' collection
-        const taskRef = doc(db, 'tasks', item.id);
-        await updateDoc(taskRef, {
-            startDate: item.originalItem.startDate,
-            endDate: item.originalItem.endDate,
-        });
-        console.log("Task updated in tasks collection:", item.id);
-
-        // Update task in tasks sub-collection within the 'lists' collection
-        const listsRef = collection(db, 'lists');
-        const listSnapshot = await getDocs(listsRef);
-
-        listSnapshot.forEach(async (docSnapshot) => {
-            const listID = docSnapshot.id;
-
-            // Get the tasks sub-collection reference
-            const tasksCollectionRef = collection(db, 'lists', listID, 'tasks');
-
-            // Get the task document with the matching item.id
-            const taskSnapshot = await getDocs(tasksCollectionRef);
-            let taskID;
-            taskSnapshot.forEach((doc) => {
-                if (doc.id === item.id) {
-                    console.log("MATCH FOUND")
-                    taskID = doc.id;
-                }
-            });
-
-            // If the task is found, update the task in the sub-collection
-            if (taskID) {
-                const taskRef = doc(db, 'lists', listID, 'tasks', taskID);
-                await updateDoc(taskRef, {
-                    startDate: item.originalItem.startDate,
-                    endDate: item.originalItem.endDate,
-                });
-                console.log(`Task updated in list ${listID}:`, item.id);
-            }
-        });
     }
 
-
-
-
-
-    const fetchTasks = async (projectID: string): Promise<ICalendarItem[]> => {
+    const fetchTasks = async () => {
+        console.log("In fetch tasks")
         const firebaseConfig = {
-                    apiKey: "AIzaSyBPB1jmwH-3h1YmBAkkekTF8eDto4pfo9c",
-                    authDomain: "workwise-b1604.firebaseapp.com",
-                    projectId: "workwise-b1604",
-                    storageBucket: "workwise-b1604.appspot.com",
-                    messagingSenderId: "218806215802",
-                    appId: "1:218806215802:web:258458dab46639a66e07c3"
-        };
-    console.log("In fetch tasks");
+                apiKey: "AIzaSyBPB1jmwH-3h1YmBAkkekTF8eDto4pfo9c",
+                authDomain: "workwise-b1604.firebaseapp.com",
+                projectId: "workwise-b1604",
+                storageBucket: "workwise-b1604.appspot.com",
+                messagingSenderId: "218806215802",
+                appId: "1:218806215802:web:258458dab46639a66e07c3"
+            };
 
-    // Initialize the Firebase app and get the Firestore database reference
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app)
+        const tasksRef = collection(db, 'individualtasks');
+        const taskSnapshot = await getDocs(tasksRef);
+        const tasks: ICalendarItem[] = [];
 
-    // Fetch lists that are part of the given project
-    const listsRef = collection(db, 'lists');
-    const listSnapshot = await getDocs(listsRef);
-    const projectListIDs: string[] = [];
-
-    listSnapshot.forEach((doc) => {
-        const listData = doc.data();
-        if (listData.projID === projectID) {
-            projectListIDs.push(doc.id);
-        }
-    });
-
-    // Fetch tasks that belong to lists in the given project
-    const tasksRef = collection(db, 'tasks');
-    const taskSnapshot = await getDocs(tasksRef);
-    const tasks: ICalendarItem[] = [];
-
-    taskSnapshot.forEach((doc) => {
-        //console.log("In task snapshot");
-        const taskData = doc.data();
-        if (taskData.listID && projectListIDs.includes(taskData.listID)) {
+        taskSnapshot.forEach((doc) => {
+            console.log("In task snapshot")
+            const taskData = doc.data();
             tasks.push({
                 id: doc.id,
-                title: taskData.taskName,
+                title: taskData.Name,
                 startDate: taskData.endDate.toDate(),
                 endDate: taskData.endDate.toDate(),
-                color: taskData.cardColor
+                //color: taskData.completed ? '#00FF00' : '#FF0000', // Optional: different colors for completed and not completed tasks
             });
-        }
-        //console.log(tasks);
-    });
-
+        });
+        //state.items = tasks; // update state.items with the new data
+        //console.log('Data refreshed');
         return tasks;
     };
 
     onMounted(async () => {
-    //console.log("IN MOUNTED")
-    const route = useRoute();
-    const projID = route.params.projID as string;
-    //console.log(typeof projID);
-    //console.log(projID)
-
-        if (projID) {
-            state.items = await fetchTasks(projID);
-        }
-    });
-
-    // to setup for the task colors
-    const itemClasses = (item: ICalendarItem): string[] => {
-        console.log(item);
-        const classes = ['rounded-border']; // Add the custom class here
-        if (item && item.color) {
-            classes.push(`bg-color-${item.color.replace('#', '')}`)
-            console.log("colors found!")
-        } else {
-            console.log(`No color found for item ${item}`);
-        }
-        return classes;
-    }
-
-    const itemStyles = (item: ICalendarItem): string => {
-        const bgColor = item.color ? `background-color: ${item.color};` : '';
-        const borderRadius = 'border-radius: 8%;';
-        const paddingTop = 'padding-top: 0.1em';
-        const textAlign = 'text-align: center';
-        return `${bgColor} ${borderRadius} ${paddingTop} ${textAlign}`;
-    };
-
-    const itemsWithColor = computed(() => {
-        return state.items.map(item => {
-            return {
-                ...item,
-                style: itemStyles(item),
-            };
-        });
+        console.log("In Mounted")
+        const tasks = await fetchTasks();
+        state.items.push(...tasks);
+        //console.log(this.userID)
     });
 </script>
 
 <script lang="ts">
     import { getFirestore, collection} from 'firebase/firestore';
     import { initializeApp } from "firebase/app";
-    import { useRoute } from "vue-router";
+    import { getAuth, onAuthStateChanged } from '@firebase/auth';
 
     export default {
         name: 'Calendar',
         props: {
             addItems: Boolean,
+            userID: String,
         },
         data() {
             return {
@@ -340,9 +230,20 @@
             }
         },
         components: {
-            Sidebar
-        }, 
-        
+            Sidebar,
+       },
+        mounted() {
+            const auth = getAuth();
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    console.log(user.uid);
+                    //const userID = user.uid;
+                } else {
+                this.$router.push("/login")
+                }
+            })
+            //console.log(this.userID);
+        }
     }
 </script>
 
@@ -372,9 +273,9 @@
         align-items: center;
     }
 
-    #calendar-body {
-        width: 55vw;
-        height: 85vh;
+    .Homepage-items #calendar-body {
+        width: 35vw !important;
+        height: 65vh !important;
     }
 
     #add-item {
@@ -455,15 +356,5 @@
 
     .cv-day.outsideOfMonth {
         background-color: #f7f7f7 !important;
-    }
-
-    .calendar-item {
-        padding: 3px;
-        border-radius: 3px;
-        color: white;
-    }
-
-    .rounded-border {
-        border-radius: 50% !important; 
     }
 </style>

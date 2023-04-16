@@ -6,7 +6,7 @@ import ProjectTaskPage from '@/views/ProjectTaskPage.vue';
 import HomePage from '@/views/HomePage.vue'
 import CalendarPage from '@/views/CalendarPage.vue';
 import SignUpDetails from '@/views/SignUpDetails.vue';
-import TestingPage from '@/views/TestingPage.vue';
+import Chat from '@/views/Chat.vue';
 import AllProjectsPage from '@/views/AllProjectsPage.vue'
 
 const routes = [
@@ -41,14 +41,14 @@ const routes = [
         component: ProjectTaskPage,
     },
     {
-        path: '/calendar',
+        path: '/calendar/:projID/:projName',
         name: 'Calendar Page',
         component: CalendarPage,
     },
     {
-        path: '/test',
-        name: 'Testing Page',
-        component: TestingPage,
+        path: '/chat',
+        name: 'Chat Box',
+        component: Chat,
     },
     {
         path: '/projects',

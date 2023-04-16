@@ -1,5 +1,5 @@
 <template>
-    <div id="calendar-display" class="flex-row">
+    <div id="calendar-display" class="flex-row" v-if="user">
 
         <div>
             <Sidebar />
@@ -18,21 +18,44 @@
         </div>
 
         <div class="users-in-project">
-            <UsersInProject />
         </div>
     </div>
 
 
 </template>
 
-<script setup lang="ts">  
+<script>  
 
     import Sidebar from "./SideBar.vue"
-    import UsersInProject from "@/components/UsersInProject/UsersInProject.vue"
     import Calendar from "../components/Calendar.vue"
     import Header from "../components/Header.vue"
-
-
+    import { getUser } from '../components/SidebarAPI/userinfo.js';
+    import { getAuth, onAuthStateChanged } from '@firebase/auth';
+    
+    export default {
+        name: "CalendarPage",
+        components: {
+            Sidebar,
+            Header,
+            Calendar
+        },
+        data() {
+            return {
+                user: null,
+            };
+        },
+        mounted() {
+            const auth = getAuth();
+            onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("User is signed in!")
+                this.user = user;
+            } else {
+                this.$router.push("/login");
+            }
+            });
+        },
+        };
 </script>
 
 <style scoped>
