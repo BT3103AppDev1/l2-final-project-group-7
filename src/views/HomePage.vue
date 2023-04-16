@@ -6,7 +6,7 @@
 
     <div class="Homepage-body">
       <div class="Homepage-title">
-        <span class="Homepage-greeting-hellotext">Hello, {{ userDetails[0].username }}</span>
+        <span class="Homepage-greeting-hellotext">Hello, let's get to work! <!-- {{ userDetails[0].username }}--></span>
         <div class="Homepage-date">
           <span class="Homepage-todaytext">Today</span>
           <span class="Homepage-datetext">{{currentDate()}}</span>
@@ -22,9 +22,7 @@
         <HomeCalendar />
       </div>
     </div>
-
-
-  </div>
+    </div>
   </div>
 </template>
 
@@ -51,7 +49,7 @@ export default {
   data() {
     return {
       todaysdate: new Date().toLocaleString,
-      userDetails: getUser(),
+      //userDetails: getUser(),
       user: false
     }
   }, 
